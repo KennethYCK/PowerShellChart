@@ -9,7 +9,7 @@ import-module PowershellChart
 $Chart = new-Chart
 $Process =Get-Process | Sort-Object CPU -Descending | Select-Object -First 20
 
-$Chart | Set-ChartSeries -X_Values $Process.name -Y_Values $Process.ws
+$Chart | Set-ChartSeries -X_Values $Process.name -Y_Values $Process.CPU
 Set-Chart $Chart -charttype Pie
 Save-ChartImage -Chart $Chart -FileName "Exmaple.png"
 ```

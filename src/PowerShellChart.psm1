@@ -14,9 +14,10 @@ param(
         $Height,
 
         [string]
-        $Charttype = "Line"
+        $Charttype = "Line",
 
-
+        [string]
+        $Title
     )
  
     
@@ -27,6 +28,11 @@ param(
     $Chart.ChartAreas.Add($ChartArea)
     [void]$Chart.Series.Add(0)
 
+    [void]$chart.Titles.add("Image")
+    if($PSBoundParameters.ContainsKey("Title"))
+    {
+        $chart.Titles[0].Text = $Title
+    }
    
     if($ga_charttype -contains $Charttype)
     {
@@ -114,6 +120,34 @@ function Set-ChartSeries {
     
 }
 
+
+
+function Remove-ChartSeries {
+    param (
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [System.Windows.Forms.DataVisualization.Charting.Chart]
+        $Chart,
+
+        [Parameter(Mandatory=$true)]
+        $SeriesName
+    )
+    $tmp = $chart.Series | Select-Object Name
+    $tmp_hash =@{}
+    for($i=0 ;$i -lt $tmp.count ;$i++)
+    { 
+        $tmp_hash[ $tmp[$i].name]  = $i
+    }
+    if ($null -eq $tmp_hash[$SeriesName] ){
+        Write-Host "Error: Series $SeriesName does not exist."
+    }
+    else {
+        [void]$Chart.Series.RemoveAt($tmp_hash[$SeriesName])    
+    }
+    
+    
+}
+
+
 function Clear-ChartSeries {
     param (
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
@@ -128,28 +162,15 @@ function Clear-ChartSeries {
         [void]$Chart.Series[$SeriesName].Points.clear()
     }   
     else{
-        return $Chart.Series
+        for($i=0;$i -lt $Chart.Series.count ; $i++)
+        {
+            [void]$Chart.Series[$i].Points.clear()
+        }
     }
-        [void]$Chart.Series[$SeriesName].Points.clear()
+        
     
     
 }
-
-
-function Remove-ChartSeries {
-    param (
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        [System.Windows.Forms.DataVisualization.Charting.Chart]
-        $Chart,
-
-        [Parameter(Mandatory=$true)]
-        $SeriesName
-    )
-    
-    [void]$Chart.Series.Remove($SeriesName)
-    
-}
-
 function Set-Chart{
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
@@ -163,7 +184,10 @@ function Set-Chart{
         $Width,
 
         [int]
-        $Height
+        $Height,
+
+        [string]
+        $Title
     )
     
     if($PSBoundParameters.ContainsKey("Charttype"))
@@ -184,6 +208,10 @@ function Set-Chart{
     if($PSBoundParameters.ContainsKey("Height"))
     {
         $Chart.Height = $Height
+    }
+    if($PSBoundParameters.ContainsKey("Title"))
+    {
+        $chart.Titles[0].Text = $Title
     }
    
 }
@@ -210,5 +238,5 @@ function Save-ChartImage{
     
     $ImageFormat = $FileName.split('.')[1]
 
-    $Chart.SaveImage($FileName,$ImageFormat)
+    $Chart.SaveImage($FileName , $ImageFormat)
 }
